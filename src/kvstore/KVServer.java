@@ -47,8 +47,12 @@ public class KVServer implements KeyValueInterface {
         	KVMessage msg = new KVMessage(KVConstants.RESP, ERROR_OVERSIZED_VALUE);
             throw new KVException(msg);
         }
-        dataStore.put(key, value);
+        Lock lock = dataCache.getLock(key);
+        lock.lock();
+        // No Exception will be thrown here
         dataCache.put(key, value);
+        dataStore.put(key, value);
+        lock.unlock();
     }
 
     /**
@@ -61,11 +65,19 @@ public class KVServer implements KeyValueInterface {
      */
     @Override
     public String get(String key) throws KVException {
+    	Lock lock = dataCache.getLock(key);
+    	lock.lock();
     	String ret = dataCache.get(key);
-    	if(ret != null) return ret;
-    	ret = dataStore.get(key);
-    	if(ret != null)
-    		dataCache.put(key, ret);
+    	try {
+    		if(ret == null) {
+    			ret = dataStore.get(key);
+    			if(ret != null) 
+    				dataCache.put(key, ret);
+    		}
+    	}
+    	finally{
+    		lock.unlock();
+    	}
         return ret;
     }
 
@@ -77,8 +89,15 @@ public class KVServer implements KeyValueInterface {
      */
     @Override
     public void del(String key) throws KVException {
+    	Lock lock = dataCache.getLock(key);
+    	lock.lock();
         dataCache.del(key);
-        dataStore.del(key);
+        try {
+        	dataStore.del(key);
+        }
+        finally{
+        	lock.unlock();
+        }
     }
 
     /**
@@ -90,10 +109,10 @@ public class KVServer implements KeyValueInterface {
      * @param key key to check for membership in store
      */
     public boolean hasKey(String key) {
-        if(dataCache.get(key) != null) return true;
         try {
         	dataStore.get(key);
         } catch (KVException e) { // an exception of key_not_found is caught
+        	e.printStackTrace();
         	return false;
         }
         return true;

@@ -39,7 +39,16 @@ public class KVServer implements KeyValueInterface {
      */
     @Override
     public void put(String key, String value) throws KVException {
-        // implement me
+        if(key.length() > MAX_KEY_SIZE) {
+        	KVMessage msg = new KVMessage(KVConstants.RESP, ERROR_OVERSIZED_KEY);
+            throw new KVException(msg);
+        }
+        if(key.length() > MAX_VAL_SIZE) {
+        	KVMessage msg = new KVMessage(KVConstants.RESP, ERROR_OVERSIZED_VALUE);
+            throw new KVException(msg);
+        }
+        dataStore.put(key, value);
+        dataCache.put(key, value);
     }
 
     /**
@@ -52,8 +61,12 @@ public class KVServer implements KeyValueInterface {
      */
     @Override
     public String get(String key) throws KVException {
-        // implement me
-        return null;
+    	String ret = dataCache.get(key);
+    	if(ret != null) return ret;
+    	ret = dataStore.get(key);
+    	if(ret != null)
+    		dataCache.put(key, ret);
+        return ret;
     }
 
     /**
@@ -64,7 +77,8 @@ public class KVServer implements KeyValueInterface {
      */
     @Override
     public void del(String key) throws KVException {
-        // implement me
+        dataCache.del(key);
+        dataStore.del(key);
     }
 
     /**
@@ -76,8 +90,13 @@ public class KVServer implements KeyValueInterface {
      * @param key key to check for membership in store
      */
     public boolean hasKey(String key) {
-        // implement me
-        return false;
+        if(dataCache.get(key) != null) return true;
+        try {
+        	dataStore.get(key);
+        } catch (KVException e) { // an exception of key_not_found is caught
+        	return false;
+        }
+        return true;
     }
 
     /** This method is purely for convenience and will not be tested. */

@@ -2,7 +2,13 @@ package kvstore;
 
 import static kvstore.KVConstants.*;
 
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
+
+import javax.print.Doc;
+import javax.xml.parsers.*;
+
+import org.w3c.dom.*;
 
 /**
  * This is a basic key-value store. Ideally this would go to disk, or some other
@@ -72,7 +78,31 @@ public class KVStore implements KeyValueInterface {
      */
     public String toXML() {
         // implement me
-        return null;
+    	try {
+    		DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
+    		DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
+    		Document doc = docBuilder.newDocument();
+    		Element rootElement = doc.createElement("KVStore");
+    		doc.appendChild(rootElement);
+    		
+    		for(Entry<String, String> e: store.entrySet()) {
+    			Element pair = doc.createElement("KVPair");
+    			rootElement.appendChild(pair);
+    			
+    			Element key = doc.createElement("Key");
+    			key.appendChild(doc.createTextNode(e.getKey()));
+    			Element value = doc.createElement("Value");
+    			value.appendChild(doc.createTextNode(e.getValue()));
+    			
+    			pair.appendChild(key);
+    			pair.appendChild(value);
+    		}
+    		// TODO: transform doc to String
+		} catch (ParserConfigurationException e) {
+			// TODO Auto-generated catch block
+			//e.printStackTrace();
+			return null;
+		}
     }
 
     @Override

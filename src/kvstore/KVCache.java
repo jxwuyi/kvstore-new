@@ -1,8 +1,16 @@
 package kvstore;
 
 import java.util.LinkedList;
+import java.util.Map.Entry;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 /**
  * A set-associate cache which has a fixed maximum number of sets (numSets).
@@ -13,6 +21,24 @@ import java.util.concurrent.locks.ReentrantLock;
 public class KVCache implements KeyValueInterface {
 	
 	private int numSets = 100;
+	private int numElem = 10;
+	
+	class Triple {
+		private String x;
+		private String y;
+		private boolean z;
+		public Triple(String x,String y,boolean z){
+			this.x=x;this.y=y;this.z=z;
+		}
+		public String getKey(){return x;}
+		public String getAttr1(){return y;}
+		public boolean getAttr2(){return z;}
+		public void setAttr1(String y){this.y=y;}
+		public void setAttr2(boolean z){this.z=z;}
+	}
+	
+	Lock[] locks;
+	LinkedList<Triple>[] sets;
 	
     /**
      * Constructs a second-chance-replacement cache.
@@ -22,7 +48,14 @@ public class KVCache implements KeyValueInterface {
      */
     @SuppressWarnings("unchecked")
     public KVCache(int numSets, int maxElemsPerSet) {
-        // implement me
+    	this.numSets = numSets;
+    	this.numElem = maxElemsPerSet;
+    	locks = new ReentrantLock[numSets];
+    	sets = new LinkedList[numSets];
+    	for(int i=0;i<numSets;++i) {
+    		locks[i] = new ReentrantLock();
+    		sets[i] = new LinkedList<Triple>();
+    	}
     }
 
     /**
@@ -36,7 +69,13 @@ public class KVCache implements KeyValueInterface {
      */
     @Override
     public String get(String key) {
-        // implement me
+        int k = getSetId(key);
+        for(Triple e : sets[k]) {
+        	if(e.getKey().equals(key)) {
+        		e.setAttr2(true);
+        		return e.getAttr1();
+        	}
+        }
         return null;
     }
 
@@ -58,7 +97,26 @@ public class KVCache implements KeyValueInterface {
      */
     @Override
     public void put(String key, String value) {
-        // implement me
+        int k = getSetId(key);
+        // check if key exists
+        for(Triple e: sets[k]) {
+        	if(e.getKey() == key) {
+        		e.setAttr1(value);
+        		e.setAttr2(true);
+        		return ;
+        	}
+        }
+        // does not exist
+        if(sets[k].size() == numElem) { // remove one element
+        	while(sets[k].getFirst().getAttr2()) {
+        		Triple t = sets[k].remove();
+        		t.setAttr2(false);
+        		sets[k].add(t);
+        	}
+        	sets[k].remove(); // remove the first element marked
+        }
+        // add a new entry
+        sets[k].add(new Triple(key, value, true));
     }
 
     /**
@@ -70,7 +128,13 @@ public class KVCache implements KeyValueInterface {
      */
     @Override
     public void del(String key) {
-        // implement me
+    	int k = getSetId(key);
+        for(Triple e : sets[k]) {
+        	if(e.getKey().equals(key)) {
+        		sets[k].remove(e);
+        		return ;
+        	}
+        }
     }
 
     /**
@@ -82,8 +146,7 @@ public class KVCache implements KeyValueInterface {
      * @return lock for the set that contains the key
      */
     public Lock getLock(String key) {
-        // implement me
-        return null;
+        return locks[getSetId(key)];
     }
 
     /**
@@ -101,8 +164,36 @@ public class KVCache implements KeyValueInterface {
      * This method is best effort. Any exceptions that arise can be dropped.
      */
     public String toXML() {
-        // implement me
-        return null;
+    	try {
+    		DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
+    		DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
+    		Document doc = docBuilder.newDocument();
+    		Element rootElement = doc.createElement("KVCache");
+    		doc.appendChild(rootElement);
+    		for(int k = 0; k < numSets; ++ k) {
+    			Element s = doc.createElement("Set");
+    			s.setAttribute("Id", Integer.toString(k));
+    			rootElement.appendChild(s);
+    			for(Triple e: sets[k]) {
+    				Element p = doc.createElement("CacheEntry");
+    				p.setAttribute("isReferenced", Boolean.toString(e.getAttr2()));
+    				s.appendChild(p);
+    				
+    				Element key = doc.createElement("Key");
+    				key.appendChild(doc.createTextNode(e.getKey()));
+    				p.appendChild(key);
+    				Element value = doc.createElement("Value");
+    				value.appendChild(doc.createTextNode(e.getAttr1()));
+    				p.appendChild(value);
+    			}
+    		}
+    		// TODO: transform doc to String
+    		return null;
+		} catch (ParserConfigurationException e) {
+			// TODO Auto-generated catch block
+			//e.printStackTrace();
+			return null;
+		}
     }
 
     @Override

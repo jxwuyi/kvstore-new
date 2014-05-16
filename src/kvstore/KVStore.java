@@ -98,6 +98,7 @@ public class KVStore implements KeyValueInterface {
     			pair.appendChild(value);
     		}
     		// TODO: transform doc to String
+    		return null;
 		} catch (ParserConfigurationException e) {
 			// TODO Auto-generated catch block
 			//e.printStackTrace();

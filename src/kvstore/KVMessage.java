@@ -76,11 +76,12 @@ public class KVMessage implements Serializable {
      */
     public KVMessage(Socket sock, int timeout) throws KVException {
     	try {
-			sock.setSoTimeout(timeout);
+			sock.setSoTimeout(timeout); // set Timeout
 			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 	    	DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
 	    	Document doc = dBuilder.parse(new NoCloseInputStream(sock.getInputStream()));
 	    	Element root = doc.getDocumentElement();
+	    	root.normalize();
 	    	
 	    	msgType = root.getAttribute("type");
 	    	if(msgType.equals(KVConstants.PUT_REQ)) { // put
@@ -93,11 +94,26 @@ public class KVMessage implements Serializable {
 	    	if(msgType.equals(KVConstants.DEL_REQ)) { // del
 	    		key = doc.getElementsByTagName("Key").item(0).getTextContent();
 	    	} else
+	    	if(msgType.equals(KVConstants.RESP)) { // response
+	    		if(doc.getElementsByTagName("Message").getLength() > 0)
+	    			message = doc.getElementsByTagName("Message").item(0).getTextContent();
+	    		if(doc.getElementsByTagName("Key").getLength() > 0)
+	    			key = doc.getElementsByTagName("Key").item(0).getTextContent();
+	    		if(doc.getElementsByTagName("Value").getLength() > 0)
+	    			value = doc.getElementsByTagName("Value").item(0).getTextContent();
+	    		if(message != null) {
+	    			if(key != null || value != null)
+	    				throw new KVException(KVConstants.ERROR_INVALID_FORMAT);
+	    		} else {
+	    			if(key == null || value == null)
+	    				throw new KVException(KVConstants.ERROR_INVALID_FORMAT);
+	    		}
+	    	} else
 	    		// no such type
 	    		throw new KVException(KVConstants.ERROR_INVALID_FORMAT);
-		} catch (SocketTimeoutException e) {
+		} catch (SocketTimeoutException e) { // Exception for Timeout
     		throw new KVException(KVConstants.ERROR_SOCKET_TIMEOUT);
-    	} catch (SocketException e) {
+    	} catch (SocketException e) { // Exception when calling setSoTime()
 			throw new KVException(KVConstants.ERROR_COULD_NOT_CREATE_SOCKET);
 		} catch (ParserConfigurationException e) {
 			throw new KVException(KVConstants.ERROR_PARSER);
@@ -142,35 +158,56 @@ public class KVMessage implements Serializable {
 		Element msg = doc.createElement("KVMessage");
 		doc.appendChild(msg);
 			
-		if(key == null || msgType == null)
+		if(msgType == null)
 			throw new KVException(KVConstants.ERROR_INVALID_FORMAT);
 		
 		msg.setAttribute("type", msgType);
 		
-		if(msg.equals(KVConstants.PUT_REQ)) { // put
-			Element key = doc.createElement("Key");
-    		key.appendChild(doc.createTextNode(this.key));
-    		msg.appendChild(key);
-
-    		if(value == null)
-    			throw new KVException(KVConstants.ERROR_INVALID_FORMAT);
-    		Element value = doc.createElement("Value");
-    		value.appendChild(doc.createTextNode(this.value));
-    		msg.appendChild(value);
-		} else
-		if(msg.equals(KVConstants.GET_REQ)) { // put
-			Element key = doc.createElement("Key");
-    		key.appendChild(doc.createTextNode(this.key));
-    		msg.appendChild(key);
-		} else
-		if(msg.equals(KVConstants.DEL_REQ)) { // put
-			Element key = doc.createElement("Key");
-    		key.appendChild(doc.createTextNode(this.key));
-    		msg.appendChild(key);
-		} else
-			// invalid request
-			throw new KVException(KVConstants.ERROR_INVALID_FORMAT);
-		
+		if(msgType.equals(KVConstants.RESP)) {
+			if(message != null) { // only message
+    			if(key != null || value != null)
+    				throw new KVException(KVConstants.ERROR_INVALID_FORMAT);
+    			Element message = doc.createElement("Message");
+    			message.appendChild(doc.createTextNode(this.message));
+    			msg.appendChild(message);
+    		} else { // resp of getreq
+    			if(key == null || value == null)
+    				throw new KVException(KVConstants.ERROR_INVALID_FORMAT);
+    			Element key = doc.createElement("Key");
+	    		key.appendChild(doc.createTextNode(this.key));
+	    		msg.appendChild(key);
+	    		Element value = doc.createElement("Value");
+	    		value.appendChild(doc.createTextNode(this.value));
+	    		msg.appendChild(value);
+    		}
+		} else {			
+			if(key == null) // every request has a field of key 
+				throw new KVException(KVConstants.ERROR_INVALID_FORMAT);
+			
+			if(msgType.equals(KVConstants.PUT_REQ)) { // put
+				Element key = doc.createElement("Key");
+	    		key.appendChild(doc.createTextNode(this.key));
+	    		msg.appendChild(key);
+	
+	    		if(value == null)
+	    			throw new KVException(KVConstants.ERROR_INVALID_FORMAT);
+	    		Element value = doc.createElement("Value");
+	    		value.appendChild(doc.createTextNode(this.value));
+	    		msg.appendChild(value);
+			} else
+			if(msgType.equals(KVConstants.GET_REQ)) { // put
+				Element key = doc.createElement("Key");
+	    		key.appendChild(doc.createTextNode(this.key));
+	    		msg.appendChild(key);
+			} else
+			if(msgType.equals(KVConstants.DEL_REQ)) { // put
+				Element key = doc.createElement("Key");
+	    		key.appendChild(doc.createTextNode(this.key));
+	    		msg.appendChild(key);
+			} else
+				// invalid request type
+				throw new KVException(KVConstants.ERROR_INVALID_FORMAT);
+		}
 		String xml = null;
 		try {
 			xml = printDoc(doc);

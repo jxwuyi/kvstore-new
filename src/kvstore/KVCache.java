@@ -23,22 +23,22 @@ public class KVCache implements KeyValueInterface {
 	private int numSets = 100;
 	private int numElem = 10;
 	
-	class Triple {
-		private String x;
-		private String y;
-		private boolean z;
-		public Triple(String x,String y,boolean z){
-			this.x=x;this.y=y;this.z=z;
+	class Entry {
+		private String key;
+		private String value;
+		private boolean refer;
+		public Entry(String key,String value,boolean refer){
+			this.key=key;this.value=value;this.refer=refer;
 		}
-		public String getKey(){return x;}
-		public String getAttr1(){return y;}
-		public boolean getAttr2(){return z;}
-		public void setAttr1(String y){this.y=y;}
-		public void setAttr2(boolean z){this.z=z;}
+		public String getKey(){return key;}
+		public String getValue(){return value;}
+		public boolean getRefer(){return refer;}
+		public void setValue(String value){this.value=value;}
+		public void setRefer(boolean refer){this.refer=refer;}
 	}
 	
 	Lock[] locks;
-	LinkedList<Triple>[] sets;
+	LinkedList<Entry>[] sets;
 	
     /**
      * Constructs a second-chance-replacement cache.
@@ -54,7 +54,7 @@ public class KVCache implements KeyValueInterface {
     	sets = new LinkedList[numSets];
     	for(int i=0;i<numSets;++i) {
     		locks[i] = new ReentrantLock();
-    		sets[i] = new LinkedList<Triple>();
+    		sets[i] = new LinkedList<Entry>();
     	}
     }
 
@@ -70,10 +70,10 @@ public class KVCache implements KeyValueInterface {
     @Override
     public String get(String key) {
         int k = getSetId(key);
-        for(Triple e : sets[k]) {
+        for(Entry e : sets[k]) {
         	if(e.getKey().equals(key)) {
-        		e.setAttr2(true);
-        		return e.getAttr1();
+        		e.setRefer(true);
+        		return e.getValue();
         	}
         }
         return null;
@@ -99,24 +99,24 @@ public class KVCache implements KeyValueInterface {
     public void put(String key, String value) {
         int k = getSetId(key);
         // check if key exists
-        for(Triple e: sets[k]) {
+        for(Entry e: sets[k]) {
         	if(e.getKey() == key) {
-        		e.setAttr1(value);
-        		e.setAttr2(true);
+        		e.setValue(value);
+        		e.setRefer(true);
         		return ;
         	}
         }
         // does not exist
         if(sets[k].size() == numElem) { // remove one element
-        	while(sets[k].getFirst().getAttr2()) {
-        		Triple t = sets[k].remove();
-        		t.setAttr2(false);
+        	while(sets[k].getFirst().getRefer()) {
+        		Entry t = sets[k].remove();
+        		t.setRefer(false);
         		sets[k].add(t);
         	}
         	sets[k].remove(); // remove the first element marked
         }
         // add a new entry
-        sets[k].add(new Triple(key, value, true));
+        sets[k].add(new Entry(key, value, true));
     }
 
     /**
@@ -129,7 +129,7 @@ public class KVCache implements KeyValueInterface {
     @Override
     public void del(String key) {
     	int k = getSetId(key);
-        for(Triple e : sets[k]) {
+        for(Entry e : sets[k]) {
         	if(e.getKey().equals(key)) {
         		sets[k].remove(e);
         		return ;
@@ -174,16 +174,16 @@ public class KVCache implements KeyValueInterface {
     			Element s = doc.createElement("Set");
     			s.setAttribute("Id", Integer.toString(k));
     			rootElement.appendChild(s);
-    			for(Triple e: sets[k]) {
+    			for(Entry e: sets[k]) {
     				Element p = doc.createElement("CacheEntry");
-    				p.setAttribute("isReferenced", Boolean.toString(e.getAttr2()));
+    				p.setAttribute("isReferenced", Boolean.toString(e.getRefer()));
     				s.appendChild(p);
     				
     				Element key = doc.createElement("Key");
     				key.appendChild(doc.createTextNode(e.getKey()));
     				p.appendChild(key);
     				Element value = doc.createElement("Value");
-    				value.appendChild(doc.createTextNode(e.getAttr1()));
+    				value.appendChild(doc.createTextNode(e.getValue()));
     				p.appendChild(value);
     			}
     		}

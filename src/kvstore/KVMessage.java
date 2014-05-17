@@ -82,7 +82,7 @@ public class KVMessage implements Serializable {
 	    	Document doc = dBuilder.parse(new NoCloseInputStream(sock.getInputStream()));
 	    	Element root = doc.getDocumentElement();
 	    	
-	    	msgType = root.getAttributes().getNamedItem("type").getNodeValue();
+	    	msgType = root.getAttribute("type");
 	    	if(msgType.equals(KVConstants.PUT_REQ)) { // put
 	    		key = doc.getElementsByTagName("Key").item(0).getTextContent();
 	    		value = doc.getElementsByTagName("Value").item(0).getTextContent();
@@ -108,7 +108,6 @@ public class KVMessage implements Serializable {
 		} catch(Exception e) { // any other exceptions
 			throw new KVException(KVConstants.ERROR_INVALID_FORMAT);
 		}
-    	
     }
 
     /**
@@ -131,8 +130,54 @@ public class KVMessage implements Serializable {
      * @throws KVException with ERROR_INVALID_FORMAT or ERROR_PARSER
      */
     public String toXML() throws KVException {
-        // implement me
-        return null;
+    	DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
+		DocumentBuilder docBuilder = null;
+		try {
+			docBuilder = docFactory.newDocumentBuilder();
+		}catch (ParserConfigurationException e) {
+			throw new KVException(KVConstants.ERROR_PARSER);
+		} 
+		Document doc = docBuilder.newDocument();
+
+		Element msg = doc.createElement("KVMessage");
+		doc.appendChild(msg);
+			
+		if(key == null || msgType == null)
+			throw new KVException(KVConstants.ERROR_INVALID_FORMAT);
+		
+		msg.setAttribute("type", msgType);
+		
+		if(msg.equals(KVConstants.PUT_REQ)) { // put
+			Element key = doc.createElement("Key");
+    		key.appendChild(doc.createTextNode(this.key));
+    		msg.appendChild(key);
+
+    		if(value == null)
+    			throw new KVException(KVConstants.ERROR_INVALID_FORMAT);
+    		Element value = doc.createElement("Value");
+    		value.appendChild(doc.createTextNode(this.value));
+    		msg.appendChild(value);
+		} else
+		if(msg.equals(KVConstants.GET_REQ)) { // put
+			Element key = doc.createElement("Key");
+    		key.appendChild(doc.createTextNode(this.key));
+    		msg.appendChild(key);
+		} else
+		if(msg.equals(KVConstants.DEL_REQ)) { // put
+			Element key = doc.createElement("Key");
+    		key.appendChild(doc.createTextNode(this.key));
+    		msg.appendChild(key);
+		} else
+			// invalid request
+			throw new KVException(KVConstants.ERROR_INVALID_FORMAT);
+		
+		String xml = null;
+		try {
+			xml = printDoc(doc);
+		} catch (Exception e) {
+			throw new KVException(KVConstants.ERROR_PARSER);
+		}
+        return xml;
     }
 
 

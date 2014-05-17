@@ -2,6 +2,10 @@ package kvstore;
 
 import static kvstore.KVConstants.*;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -11,6 +15,9 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 /**
  * This is a basic key-value store. Ideally this would go to disk, or some other
@@ -102,8 +109,6 @@ public class KVStore implements KeyValueInterface {
     		// TODO: transform doc to String
     		return null;
 		} catch (ParserConfigurationException e) {
-			// TODO Auto-generated catch block
-			//e.printStackTrace();
 			return null;
 		}
     }
@@ -120,7 +125,13 @@ public class KVStore implements KeyValueInterface {
      * @param fileName the file to write the serialized store
      */
     public void dumpToFile(String fileName) {
-        // implement me
+    	try {
+			PrintWriter wt = new PrintWriter(new FileWriter(fileName));
+			wt.print(this.toXML());
+			wt.close();
+		} catch (IOException e) {
+			return ;
+		} 
     }
 
     /**
@@ -134,6 +145,31 @@ public class KVStore implements KeyValueInterface {
     public void restoreFromFile(String fileName) {
         resetStore();
 
-        // implement me
+        
+		try {
+			File xmlFile = new File(fileName);
+	    	DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+	    	DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+	    	Document doc = dBuilder.parse(xmlFile);
+	    	
+	    	NodeList lst = doc.getElementsByTagName("KVPair");
+	    	for(int i=0;i<lst.getLength();++i) {
+	    		Node node = lst.item(i);
+	    		if(node.getNodeType() == Node.ELEMENT_NODE) {
+	    			Element elem = (Element) node;
+	    			
+	    			String key = elem.getElementsByTagName("Key").item(0).getTextContent();
+	    			String value = elem.getElementsByTagName("Value").item(0).getTextContent();
+	    			store.put(key, value);
+	    		}
+	    	}
+		} catch (ParserConfigurationException e) {
+			return ;
+		} catch (SAXException e) {
+			return ;
+		} catch (IOException e) {
+			return ;
+		}
+    	
     }
 }

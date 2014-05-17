@@ -81,7 +81,8 @@ public class KVMessage implements Serializable {
 	    	DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
 	    	Document doc = dBuilder.parse(new NoCloseInputStream(sock.getInputStream()));
 	    	Element root = doc.getDocumentElement();
-	    	root.normalize();
+	    	
+	    	root.normalize(); // normalization is recommended
 	    	
 	    	msgType = root.getAttribute("type");
 	    	if(msgType.equals(KVConstants.PUT_REQ)) { // put

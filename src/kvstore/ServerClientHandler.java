@@ -30,7 +30,8 @@ public class ServerClientHandler implements NetworkHandler {
      * @param connections number of threads in threadPool to service requests
      */
     public ServerClientHandler(KVServer kvServer, int connections) {
-        // implement me
+        this.kvServer = kvServer;
+        threadPool = new ThreadPool(connections);
     }
 
     /**
@@ -41,7 +42,11 @@ public class ServerClientHandler implements NetworkHandler {
      */
     @Override
     public void handle(Socket client) {
-        // implement me
+        try {
+			threadPool.addJob(new ClientHandler(client));
+		} catch (InterruptedException e) {
+			// ignore
+		}
     }
 
     /**
@@ -67,7 +72,36 @@ public class ServerClientHandler implements NetworkHandler {
          */
         @Override
         public void run() {
-            // implement me
+        	KVMessage resp = null;
+            try {
+				KVMessage msg = new KVMessage(client);
+				if(msg.getMsgType().equals(KVConstants.PUT_REQ)) { // put
+					kvServer.put(msg.getKey(), msg.getValue());
+					resp = new KVMessage(KVConstants.RESP,KVConstants.SUCCESS);
+				} else
+				if(msg.getMsgType().equals(KVConstants.GET_REQ)) { // get
+					String value = kvServer.get(msg.getKey());
+					resp = new KVMessage(KVConstants.RESP);
+					resp.setKey(msg.getKey());
+					resp.setValue(value);
+				} else
+				if(msg.getMsgType().equals(KVConstants.DEL_REQ)) { // del
+					kvServer.del(msg.getMessage());
+					resp = new KVMessage(KVConstants.RESP,KVConstants.SUCCESS);
+				} else
+					// no such key
+					return ;
+			} catch (KVException e) {
+				// send back an error message
+				resp = new KVMessage(e.getKVMessage());
+			}
+            if(resp != null) {
+            	try {
+					resp.sendMessage(client);
+				} catch (KVException e) {
+					// nothing can be done
+				}
+            }
         }
     }
 

@@ -42,6 +42,7 @@ public class KVClient implements KeyValueInterface {
      */
     private void closeHost(Socket sock) {
         // implement me
+    	socket.close();
     }
 
     /**

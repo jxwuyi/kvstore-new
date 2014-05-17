@@ -1,7 +1,10 @@
 package kvstore;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.SocketTimeoutException;
 
 /**
  * This is a generic class that should handle all TCP network connections
@@ -62,7 +65,10 @@ public class SocketServer {
      * @throws IOException if unable create and bind a ServerSocket
      */
     public void connect() throws IOException {
-        // implement me
+    	server = new ServerSocket();
+    	server.bind(new InetSocketAddress(hostname, port));
+    	if(port == 0)
+    		port = server.getLocalPort();
     }
 
     /**
@@ -74,8 +80,16 @@ public class SocketServer {
      *         listening for or servicing requests
      */
     public void start() throws IOException {
+    	server.setSoTimeout(TIMEOUT);
+    	
         while (!stopped) {
-            // implement me
+        	try {
+        		Socket sock = server.accept();
+        		if(sock != null)
+        			handler.handle(sock);
+        	}catch(SocketTimeoutException e) {
+        		continue;
+        	}
         }
         try {
             server.close();

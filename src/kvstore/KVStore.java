@@ -151,8 +151,9 @@ public class KVStore implements KeyValueInterface {
 	    	DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 	    	DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
 	    	Document doc = dBuilder.parse(xmlFile);
+	    	Element root = doc.getDocumentElement();
 	    	
-	    	NodeList lst = doc.getElementsByTagName("KVPair");
+	    	NodeList lst = root.getElementsByTagName("KVPair");
 	    	for(int i=0;i<lst.getLength();++i) {
 	    		Node node = lst.item(i);
 	    		if(node.getNodeType() == Node.ELEMENT_NODE) {

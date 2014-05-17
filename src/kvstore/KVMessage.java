@@ -80,7 +80,9 @@ public class KVMessage implements Serializable {
 			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 	    	DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
 	    	Document doc = dBuilder.parse(new NoCloseInputStream(sock.getInputStream()));
-	    	msgType = doc.getAttributes().getNamedItem("type").getNodeValue();
+	    	Element root = doc.getDocumentElement();
+	    	
+	    	msgType = root.getAttributes().getNamedItem("type").getNodeValue();
 	    	if(msgType.equals(KVConstants.PUT_REQ)) { // put
 	    		key = doc.getElementsByTagName("Key").item(0).getTextContent();
 	    		value = doc.getElementsByTagName("Value").item(0).getTextContent();
@@ -146,7 +148,15 @@ public class KVMessage implements Serializable {
      *         ERROR_COULD_NOT_SEND_DATA
      */
     public void sendMessage(Socket sock) throws KVException {
-        // implement me
+		try {
+			PrintWriter writer = new PrintWriter(sock.getOutputStream());
+			writer.print(toXML());  
+	        writer.flush();
+	        writer.close();
+	        sock.shutdownOutput();
+		} catch (IOException e) {
+			throw new KVException(KVConstants.ERROR_COULD_NOT_SEND_DATA);
+		}  
     }
 
     public String getKey() {

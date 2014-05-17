@@ -108,7 +108,7 @@ public class KVStore implements KeyValueInterface {
     		}
     		// TODO: transform doc to String
     		return null;
-		} catch (ParserConfigurationException e) {
+		} catch (Exception e) {// best effort
 			return null;
 		}
     }
@@ -129,7 +129,7 @@ public class KVStore implements KeyValueInterface {
 			PrintWriter wt = new PrintWriter(new FileWriter(fileName));
 			wt.print(this.toXML());
 			wt.close();
-		} catch (IOException e) {
+		} catch (Exception e) {
 			return ;
 		} 
     }
@@ -163,13 +163,8 @@ public class KVStore implements KeyValueInterface {
 	    			store.put(key, value);
 	    		}
 	    	}
-		} catch (ParserConfigurationException e) {
-			return ;
-		} catch (SAXException e) {
-			return ;
-		} catch (IOException e) {
+		} catch (Exception e) { // ignore any exception
 			return ;
 		}
-    	
     }
 }

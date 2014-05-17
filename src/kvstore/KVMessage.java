@@ -1,9 +1,13 @@
 package kvstore;
 
 import static kvstore.KVConstants.*;
+
 import java.io.*;
 import java.net.*;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
@@ -11,6 +15,9 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 /**
  * This is the object that is used to generate the XML based messages
@@ -68,7 +75,38 @@ public class KVMessage implements Serializable {
      *         KVConstants.java for possible KVException messages.
      */
     public KVMessage(Socket sock, int timeout) throws KVException {
-        // implement me
+    	try {
+			sock.setSoTimeout(timeout);
+			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+	    	DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+	    	Document doc = dBuilder.parse(new NoCloseInputStream(sock.getInputStream()));
+	    	msgType = doc.getAttributes().getNamedItem("type").getNodeValue();
+	    	if(msgType.equals(KVConstants.PUT_REQ)) { // put
+	    		key = doc.getElementsByTagName("Key").item(0).getTextContent();
+	    		value = doc.getElementsByTagName("Value").item(0).getTextContent();
+	    	} else
+	    	if(msgType.equals(KVConstants.GET_REQ)) { // get
+	    		key = doc.getElementsByTagName("Key").item(0).getTextContent();
+	    	} else
+	    	if(msgType.equals(KVConstants.DEL_REQ)) { // del
+	    		key = doc.getElementsByTagName("Key").item(0).getTextContent();
+	    	} else
+	    		// no such type
+	    		throw new KVException(KVConstants.ERROR_INVALID_FORMAT);
+		} catch (SocketTimeoutException e) {
+    		throw new KVException(KVConstants.ERROR_SOCKET_TIMEOUT);
+    	} catch (SocketException e) {
+			throw new KVException(KVConstants.ERROR_COULD_NOT_CREATE_SOCKET);
+		} catch (ParserConfigurationException e) {
+			throw new KVException(KVConstants.ERROR_PARSER);
+		} catch (SAXException e) {
+			throw new KVException(KVConstants.ERROR_PARSER);
+		} catch (IOException e) {
+			throw new KVException(KVConstants.ERROR_COULD_NOT_RECEIVE_DATA);
+		} catch(Exception e) { // any other exceptions
+			throw new KVException(KVConstants.ERROR_INVALID_FORMAT);
+		}
+    	
     }
 
     /**
@@ -77,7 +115,10 @@ public class KVMessage implements Serializable {
      * @param kvm KVMessage with fields to copy
      */
     public KVMessage(KVMessage kvm) {
-        // implement me
+        msgType = kvm.getMsgType();
+        key = kvm.getKey();
+        value = kvm.getValue();
+        message = kvm.getMessage();
     }
 
     /**

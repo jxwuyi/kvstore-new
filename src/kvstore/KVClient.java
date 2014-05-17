@@ -2,6 +2,7 @@ package kvstore;
 
 import static kvstore.KVConstants.*;
 
+import java.io.IOException;
 import java.net.Socket;
 
 /**
@@ -42,7 +43,11 @@ public class KVClient implements KeyValueInterface {
      */
     private void closeHost(Socket sock) {
         // implement me
-    	socket.close();
+    	try {
+			sock.close();
+		} catch (IOException e) {
+			return ;
+		}
     }
 
     /**

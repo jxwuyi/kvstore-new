@@ -144,14 +144,15 @@ public class KVStore implements KeyValueInterface {
      */
     public void restoreFromFile(String fileName) {
         resetStore();
-
-        
+       
 		try {
 			File xmlFile = new File(fileName);
 	    	DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 	    	DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
 	    	Document doc = dBuilder.parse(xmlFile);
 	    	Element root = doc.getDocumentElement();
+	    	
+	    	root.normalize(); // normalization is recommended
 	    	
 	    	NodeList lst = root.getElementsByTagName("KVPair");
 	    	for(int i=0;i<lst.getLength();++i) {

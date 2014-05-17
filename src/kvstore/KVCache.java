@@ -187,11 +187,9 @@ public class KVCache implements KeyValueInterface {
     				p.appendChild(value);
     			}
     		}
-    		// TODO: transform doc to String
-    		return null;
-		} catch (ParserConfigurationException e) {
-			// TODO Auto-generated catch block
-			//e.printStackTrace();
+    		// TODO: probably use a better transformer
+    		return KVMessage.printDoc(doc);
+		} catch (Exception e) { // best effort
 			return null;
 		}
     }

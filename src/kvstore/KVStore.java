@@ -106,8 +106,8 @@ public class KVStore implements KeyValueInterface {
     			pair.appendChild(key);
     			pair.appendChild(value);
     		}
-    		// TODO: transform doc to String
-    		return null;
+    		// TODO: probably use a better transformer
+    		return KVMessage.printDoc(doc);
 		} catch (Exception e) {// best effort
 			return null;
 		}

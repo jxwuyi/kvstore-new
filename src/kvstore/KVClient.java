@@ -31,8 +31,15 @@ public class KVClient implements KeyValueInterface {
      * @throws KVException if unable to create or connect socket
      */
     private Socket connectHost() throws KVException {
-        // implement me
-        return null;
+    	Socket sock = null;
+    	try {
+    		sock = new Socket(server, port);
+    	} catch(IOException e) {
+    		throw new KVException(KVConstants.ERROR_COULD_NOT_CONNECT);
+    	} catch(Exception e) {
+    		throw new KVException(KVConstants.ERROR_COULD_NOT_CREATE_SOCKET);
+    	}
+        return sock;
     }
 
     /**
@@ -42,11 +49,10 @@ public class KVClient implements KeyValueInterface {
      * @param  sock Socket to be closed
      */
     private void closeHost(Socket sock) {
-        // implement me
     	try {
 			sock.close();
-		} catch (IOException e) {
-			return ;
+		} catch (Exception e) {
+			//best effort
 		}
     }
 
@@ -58,7 +64,21 @@ public class KVClient implements KeyValueInterface {
      */
     @Override
     public void put(String key, String value) throws KVException {
-        // implement me
+    	// Send Request
+    	KVMessage msg = new KVMessage(KVConstants.PUT_REQ);
+    	msg.setKey(key);
+    	msg.setValue(value);
+    	
+    	Socket sock = null;
+    	try {
+    		sock = connectHost();
+    		msg.sendMessage(sock);
+    	
+    		// Receive Response
+    		new KVMessage(sock); // we don't need to print the success msg
+    	} finally {
+    		if(sock != null) closeHost(sock);
+    	}
     }
 
     /**
@@ -70,8 +90,21 @@ public class KVClient implements KeyValueInterface {
      */
     @Override
     public String get(String key) throws KVException {
-        // implement me
-        return null;
+    	// Send Request
+    	KVMessage msg = new KVMessage(KVConstants.GET_REQ);
+    	msg.setKey(key);
+    	
+    	Socket sock = null;
+    	try {
+	    	sock = connectHost();
+	    	msg.sendMessage(sock);
+	    	
+	    	// Receive Response
+	    	KVMessage resp = new KVMessage(sock);
+	    	return resp.getValue();
+    	} finally {
+    		if(sock != null) closeHost(sock);
+    	}
     }
 
     /**
@@ -82,7 +115,20 @@ public class KVClient implements KeyValueInterface {
      */
     @Override
     public void del(String key) throws KVException {
-        // implement me
+    	// Send Request
+    	KVMessage msg = new KVMessage(KVConstants.DEL_REQ);
+    	msg.setKey(key);
+    	
+    	Socket sock = null;
+    	try {
+    		sock = connectHost();
+    		msg.sendMessage(sock);
+    	
+    		// Receive Response
+    		new KVMessage(sock); // we don't need to print the success msg
+    	} finally {
+    		if(sock != null) closeHost(sock);
+    	}
     }
 
 

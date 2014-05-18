@@ -86,7 +86,6 @@ public class KVStore implements KeyValueInterface {
      * This method is best effort. Any exceptions that arise can be dropped.
      */
     public String toXML() {
-        // implement me
     	try {
     		DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
     		DocumentBuilder docBuilder = docFactory.newDocumentBuilder();

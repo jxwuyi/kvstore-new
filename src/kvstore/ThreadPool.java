@@ -18,7 +18,6 @@ public class ThreadPool {
     public ThreadPool(int size) {
         threads = new Thread[size];
 
-        // implement me
         queue = new LinkedList<Runnable>();
         for(int i=0;i<size;++i)
         	threads[i] = new WorkerThread(this);
@@ -36,7 +35,6 @@ public class ThreadPool {
      *         state. Your implementation may or may not actually throw this.
      */
     public void addJob(Runnable r) throws InterruptedException {
-        // implement me
     	queue.add(r);
     }
 
@@ -47,7 +45,6 @@ public class ThreadPool {
      *         state. Your implementation may or may not actually throw this.
      */
     private Runnable getJob() throws InterruptedException {
-        // implement me
     	synchronized(this) {
         	if(queue.isEmpty())
         		return null;

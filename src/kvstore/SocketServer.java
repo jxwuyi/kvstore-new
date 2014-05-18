@@ -80,6 +80,7 @@ public class SocketServer {
      *         listening for or servicing requests
      */
     public void start() throws IOException {
+    	// TODO: setSoTimeout() might throw SocketException
     	server.setSoTimeout(TIMEOUT);
     	
         while (!stopped) {

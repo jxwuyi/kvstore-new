@@ -48,11 +48,14 @@ public class KVServer implements KeyValueInterface {
             throw new KVException(msg);
         }
         Lock lock = dataCache.getLock(key);
-        lock.lock();
-        // No Exception will be thrown here
-        dataCache.put(key, value);
-        dataStore.put(key, value);
-        lock.unlock();
+        try {
+        	// In case of some unexpected exception thrown here
+        	lock.lock();
+        	dataCache.put(key, value);
+        	dataStore.put(key, value);
+        } finally {
+        	lock.unlock();
+        }
     }
 
     /**
@@ -66,9 +69,10 @@ public class KVServer implements KeyValueInterface {
     @Override
     public String get(String key) throws KVException {
     	Lock lock = dataCache.getLock(key);
-    	lock.lock();
-    	String ret = dataCache.get(key);
+    	String ret = null;
     	try {
+    		lock.lock();
+        	ret = dataCache.get(key);
     		if(ret == null) {
     			ret = dataStore.get(key);
     			if(ret != null) 
@@ -90,9 +94,9 @@ public class KVServer implements KeyValueInterface {
     @Override
     public void del(String key) throws KVException {
     	Lock lock = dataCache.getLock(key);
-    	lock.lock();
-        dataCache.del(key);
         try {
+        	lock.lock();
+            dataCache.del(key);
         	dataStore.del(key);
         }
         finally{
@@ -112,7 +116,6 @@ public class KVServer implements KeyValueInterface {
         try {
         	dataStore.get(key);
         } catch (KVException e) { // an exception of key_not_found is caught
-        	e.printStackTrace();
         	return false;
         }
         return true;

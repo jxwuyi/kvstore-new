@@ -235,7 +235,8 @@ public class KVMessage implements Serializable {
 			PrintWriter writer = new PrintWriter(sock.getOutputStream());
 			writer.print(toXML());  
 	        writer.flush();
-	        writer.close();
+	        // TODO: to check how to close the writer without closing the socket
+	        //writer.close();
 	        sock.shutdownOutput();
 		} catch (IOException e) {
 			throw new KVException(KVConstants.ERROR_COULD_NOT_SEND_DATA);

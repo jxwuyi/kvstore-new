@@ -64,6 +64,12 @@ public class KVClient implements KeyValueInterface {
      */
     @Override
     public void put(String key, String value) throws KVException {
+    	// check validness of key and value
+    	if (key == null || key.length() == 0)
+    		throw new KVException(KVConstants.ERROR_INVALID_KEY);
+    	if (value == null || value.length() == 0)
+    		throw new KVException(KVConstants.ERROR_INVALID_VALUE);
+    	
     	// Send Request
     	KVMessage msg = new KVMessage(KVConstants.PUT_REQ);
     	msg.setKey(key);
@@ -90,6 +96,10 @@ public class KVClient implements KeyValueInterface {
      */
     @Override
     public String get(String key) throws KVException {
+    	// check validness of key
+    	if (key == null || key.length() == 0)
+    		throw new KVException(KVConstants.ERROR_INVALID_KEY);
+    	
     	// Send Request
     	KVMessage msg = new KVMessage(KVConstants.GET_REQ);
     	msg.setKey(key);
@@ -115,6 +125,10 @@ public class KVClient implements KeyValueInterface {
      */
     @Override
     public void del(String key) throws KVException {
+    	// check validness of key
+    	if (key == null || key.length() == 0)
+    		throw new KVException(KVConstants.ERROR_INVALID_KEY);
+    	
     	// Send Request
     	KVMessage msg = new KVMessage(KVConstants.DEL_REQ);
     	msg.setKey(key);

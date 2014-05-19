@@ -94,6 +94,38 @@ public class KVServerTest {
             assertEquals(KVConstants.ERROR_NO_SUCH_KEY, e.getKVMessage().getMessage());
         }
     }
+    
+    @Test
+    public void testOversizedKeyPutFails() {
+        setupRealServer();
+        try {
+        	StringBuffer key = new StringBuffer();
+        	for(int i=0;i<300;++i) key.append('a');
+        	StringBuffer value = new StringBuffer();
+        	for(int i=0;i<300;++i) value.append('b');
+            server.put(key.toString(),value.toString());
+            fail("put with oversized key should error");
+        } catch (KVException e) {
+            assertEquals(KVConstants.RESP, e.getKVMessage().getMsgType());
+            assertEquals(KVConstants.ERROR_OVERSIZED_KEY, e.getKVMessage().getMessage());
+        }
+    }
+    
+    @Test
+    public void testOversizedValuePutFails() {
+        setupRealServer();
+        try {
+        	StringBuffer key = new StringBuffer();
+        	for(int i=0;i<20;++i) key.append('a');
+        	StringBuffer value = new StringBuffer();
+        	for(int i=0;i<260*1024;i++) value.append('b');
+            server.put(key.toString(),value.toString());
+            fail("put with oversized value should error");
+        } catch (KVException e) {
+            assertEquals(KVConstants.RESP, e.getKVMessage().getMsgType());
+            assertEquals(KVConstants.ERROR_OVERSIZED_VALUE, e.getKVMessage().getMessage());
+        }
+    }
 
 
 }

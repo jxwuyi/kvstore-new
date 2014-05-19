@@ -1,6 +1,6 @@
 package kvstore;
 
-import static kvstore.KVConstants.ERROR_INVALID_KEY;
+import static kvstore.KVConstants.*;
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
@@ -40,10 +40,21 @@ public class KVClientTest {
     public void testInvalidKey() {
         try {
             client.put("", "bar");
-            fail("Didn't fail on empty value");
+            fail("Didn't fail on empty key");
         } catch (KVException kve) {
             String errorMsg = kve.getKVMessage().getMessage();
             assertEquals(errorMsg, ERROR_INVALID_KEY);
+        }
+    }
+    
+    @Test(timeout = 20000)
+    public void testInvalidValue() {
+        try {
+            client.put("foo", null);
+            fail("Didn't fail on empty value");
+        } catch (KVException kve) {
+            String errorMsg = kve.getKVMessage().getMessage();
+            assertEquals(errorMsg, ERROR_INVALID_VALUE);
         }
     }
 

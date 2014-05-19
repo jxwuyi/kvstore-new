@@ -43,7 +43,7 @@ public class KVServer implements KeyValueInterface {
         	KVMessage msg = new KVMessage(KVConstants.RESP, ERROR_OVERSIZED_KEY);
             throw new KVException(msg);
         }
-        if(key.length() > MAX_VAL_SIZE) {
+        if(value.length() > MAX_VAL_SIZE) {
         	KVMessage msg = new KVMessage(KVConstants.RESP, ERROR_OVERSIZED_VALUE);
             throw new KVException(msg);
         }
@@ -68,6 +68,11 @@ public class KVServer implements KeyValueInterface {
      */
     @Override
     public String get(String key) throws KVException {
+    	if(key.length() > MAX_KEY_SIZE) {
+        	KVMessage msg = new KVMessage(KVConstants.RESP, ERROR_NO_SUCH_KEY);
+            throw new KVException(msg);
+        }
+    	
     	Lock lock = dataCache.getLock(key);
     	String ret = null;
     	try {
@@ -93,6 +98,11 @@ public class KVServer implements KeyValueInterface {
      */
     @Override
     public void del(String key) throws KVException {
+    	if(key.length() > MAX_KEY_SIZE) {
+        	KVMessage msg = new KVMessage(KVConstants.RESP, ERROR_NO_SUCH_KEY);
+            throw new KVException(msg);
+        }
+    	
     	Lock lock = dataCache.getLock(key);
         try {
         	lock.lock();

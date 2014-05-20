@@ -148,6 +148,9 @@ public class KVStore implements KeyValueInterface {
 			File xmlFile = new File(fileName);
 	    	DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 	    	DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+	    	// use default errorHandler
+	    	dBuilder.setErrorHandler(null);
+	    	
 	    	Document doc = dBuilder.parse(xmlFile);
 	    	Element root = doc.getDocumentElement();
 	    	

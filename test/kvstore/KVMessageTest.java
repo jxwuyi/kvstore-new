@@ -102,7 +102,8 @@ public class KVMessageTest {
             fail("Didn't fail on XML file without prologue!");
         } catch (KVException kve) {
             String errorMsg = kve.getKVMessage().getMessage();
-            assertEquals(errorMsg, ERROR_INVALID_FORMAT);
+            // TODO: I think this should cause fatal error, not sure
+            assertEquals(errorMsg, ERROR_PARSER);
         }
     }
     

@@ -82,9 +82,8 @@ public class KVMessage implements Serializable {
 	    	Document doc = dBuilder.parse(new NoCloseInputStream(sock.getInputStream()));
 	    	
 	    	// TODO: to make sure if this exception should be thrown
-	    	if(doc.getXmlEncoding() == null || doc.getXmlVersion() == null
-	    		|| !doc.getXmlEncoding().equalsIgnoreCase("UTF-8")
-	    		|| !doc.getXmlVersion().equalsIgnoreCase("1.0"))
+	    	//   I think XML encoding could be different from utf-8
+	    	if(doc.getXmlEncoding() == null || doc.getXmlVersion() == null)
 	    		throw new KVException(KVConstants.ERROR_INVALID_FORMAT);
 	    	
 	    	Element root = doc.getDocumentElement();
@@ -95,12 +94,24 @@ public class KVMessage implements Serializable {
 	    	if(msgType.equals(KVConstants.PUT_REQ)) { // put
 	    		key = doc.getElementsByTagName("Key").item(0).getTextContent();
 	    		value = doc.getElementsByTagName("Value").item(0).getTextContent();
+	    		
+	    		if(key == null || value == null || key.length() == 0 || value.length() == 0)
+	    			throw new KVException(KVConstants.ERROR_INVALID_FORMAT);
+	    		
 	    	} else
 	    	if(msgType.equals(KVConstants.GET_REQ)) { // get
 	    		key = doc.getElementsByTagName("Key").item(0).getTextContent();
+	    		
+	    		if(key == null || key.length() == 0)
+	    			throw new KVException(KVConstants.ERROR_INVALID_FORMAT);
+	    		
 	    	} else
 	    	if(msgType.equals(KVConstants.DEL_REQ)) { // del
 	    		key = doc.getElementsByTagName("Key").item(0).getTextContent();
+	    		
+	    		if(key == null || key.length() == 0)
+	    			throw new KVException(KVConstants.ERROR_INVALID_FORMAT);
+	    		
 	    	} else
 	    	if(msgType.equals(KVConstants.RESP)) { // response
 	    		if(doc.getElementsByTagName("Message").getLength() > 0)
@@ -113,7 +124,7 @@ public class KVMessage implements Serializable {
 	    			if(key != null || value != null)
 	    				throw new KVException(KVConstants.ERROR_INVALID_FORMAT);
 	    		} else {
-	    			if(key == null || value == null)
+	    			if(key == null || value == null || key.length() == 0 || value.length() == 0)
 	    				throw new KVException(KVConstants.ERROR_INVALID_FORMAT);
 	    		}
 	    	} else
@@ -129,6 +140,8 @@ public class KVMessage implements Serializable {
 			throw new KVException(KVConstants.ERROR_PARSER);
 		} catch (IOException e) {
 			throw new KVException(KVConstants.ERROR_COULD_NOT_RECEIVE_DATA);
+		} catch (KVException e) {
+			throw e;
 		} catch(Exception e) { // any other exceptions
 			throw new KVException(KVConstants.ERROR_INVALID_FORMAT);
 		}

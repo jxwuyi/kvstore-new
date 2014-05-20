@@ -116,7 +116,7 @@ public class KVCache implements KeyValueInterface {
         	sets[k].remove(); // remove the first element marked
         }
         // add a new entry
-        sets[k].add(new Entry(key, value, true));
+        sets[k].add(new Entry(key, value, false));
     }
 
     /**

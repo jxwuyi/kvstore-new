@@ -96,7 +96,7 @@ public class KVCacheTest {
 		Lock lock = cache.getLock("1");
 		lock.lock();
 	}
-	// TO DO: Multiple Servers in order to test locks...
+	// TODO: Multiple Threads in order to test locks...
 	
 	@Test
 	public void testToXML() throws Exception {
@@ -128,31 +128,31 @@ public class KVCacheTest {
 				"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\r\n"+
 				"<KVCache>\r\n" +
 				"<Set Id=\"0\">\r\n" +
-				"<CacheEntry isReferenced=\"true\">\r\n" +
+				"<CacheEntry isReferenced=\"false\">\r\n" +
 				"<Key>3</Key>\r\n" +
 				"<Value>three</Value>\r\n" +
 				"</CacheEntry>\r\n" +
-				"<CacheEntry isReferenced=\"true\">\r\n" +
+				"<CacheEntry isReferenced=\"false\">\r\n" +
 				"<Key>6</Key>\r\n" +
 				"<Value>six</Value>\r\n" +
 				"</CacheEntry>\r\n" +
 				"</Set>\r\n" +
 				"<Set Id=\"1\">\r\n" +
-				"<CacheEntry isReferenced=\"true\">\r\n" +
+				"<CacheEntry isReferenced=\"false\">\r\n" +
 				"<Key>1</Key>\r\n" +
 				"<Value>ones</Value>\r\n" +
 				"</CacheEntry>\r\n" +
-				"<CacheEntry isReferenced=\"true\">\r\n" +
+				"<CacheEntry isReferenced=\"false\">\r\n" +
 				"<Key>4</Key>\r\n" +
 				"<Value>four</Value>\r\n" +
 				"</CacheEntry>\r\n" +
 				"</Set>\r\n" +
 				"<Set Id=\"2\">\r\n" +
-				"<CacheEntry isReferenced=\"true\">\r\n" +
+				"<CacheEntry isReferenced=\"false\">\r\n" +
 				"<Key>2</Key>\r\n" +
 				"<Value>two</Value>\r\n" +
 				"</CacheEntry>\r\n" +
-				"<CacheEntry isReferenced=\"true\">\r\n" +
+				"<CacheEntry isReferenced=\"false\">\r\n" +
 				"<Key>5</Key>\r\n" +
 				"<Value>five</Value>\r\n" +
 				"</CacheEntry>\r\n" +

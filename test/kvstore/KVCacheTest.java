@@ -84,7 +84,7 @@ public class KVCacheTest {
 		cache.put("1", "one");
 		cache.put("2", "two");
 		cache.put("3", "three");
-		assertEquals(null, cache.get("1"));
+		assertNull(cache.get("1"));
 		assertEquals("two", cache.get("2"));
 		assertEquals("three", cache.get("3"));
 	}
@@ -116,7 +116,7 @@ public class KVCacheTest {
 
 		
 		cache.put("1", "ones");	
-		// TO DO: test single element, cache.toXML()?
+		// TODO: test single element, cache.toXML()?
 		
 		// test full cache
 		cache.put("2", "two");

@@ -103,7 +103,7 @@ public class KVMessageTest {
         } catch (KVException kve) {
             String errorMsg = kve.getKVMessage().getMessage();
             // TODO: I think this should cause fatal error, not sure
-            assertEquals(errorMsg, ERROR_PARSER);
+            assertEquals(errorMsg, ERROR_INVALID_FORMAT);
         }
     }
     

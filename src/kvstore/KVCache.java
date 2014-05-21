@@ -100,7 +100,7 @@ public class KVCache implements KeyValueInterface {
         int k = getSetId(key);
         // check if key exists
         for(Entry e: sets[k]) {
-        	if(e.getKey() == key) {
+        	if(e.getKey().equals(key)) {
         		e.setValue(value);
         		e.setRefer(true);
         		return ;

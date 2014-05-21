@@ -18,5 +18,14 @@ public class EndToEndTest extends EndToEndTemplate {
         client.put("a", "2");
         assertEquals(client.get("a"), "2");  
     }
+	
+	@Test
+    public void testModificationMoreTimes() throws KVException {
+		int i;
+        for (i = 0; i < 1000; ++i ) {
+        	client.put("a", Integer.toString(i));
+        }
+        assertEquals(client.get("a"), Integer.toString(i-1));  
+    }
 
 }

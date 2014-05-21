@@ -92,9 +92,9 @@ public class MultipleClientTest {
 					        client = new KVClient(hostname, 8080);
 					        for (int i = 0; i < 10; i = i+2 ) {
 					        	client.put("key", Integer.toString(i));
-					        	System.out.println("thread "+Integer.toString(i));
-					        	System.out.println("thread get "+client.get("key"));
-					        	Thread.sleep(2000);
+					        	//System.out.println("thread "+Integer.toString(i));
+					        	//System.out.println("thread get "+client.get("key"));
+					        	Thread.sleep(200);
 					        }
 						} catch (KVException e) {
 							e.printStackTrace();
@@ -110,12 +110,12 @@ public class MultipleClientTest {
 						KVClient client;
 						try {
 					        client = new KVClient(hostname, 8080);
-							Thread.sleep(1000);
+							Thread.sleep(100);
 					        for (int i = 1; i < 10; i = i+2 ) {
 					        	client.put("key", Integer.toString(i));
-					        	System.out.println("thread "+ Integer.toString(i));
-					        	System.out.println("thread get "+client.get("key"));
-					        	Thread.sleep(2000);
+					        	//System.out.println("thread "+ Integer.toString(i));
+					        	//System.out.println("thread get "+client.get("key"));
+					        	Thread.sleep(200);
 					        }
 						} catch (KVException e) {
 							e.printStackTrace();
@@ -125,22 +125,26 @@ public class MultipleClientTest {
 					}
 				});
 		String value = "";
+		int count = 0;
 		thread1.start();
 		thread2.start();
         while (true) {
         	try {
-				Thread.sleep(100);
-			} catch (InterruptedException e) {
+				Thread.sleep(10);
+			} catch (InterruptedException e) { 
 				e.printStackTrace();
 			}
         	String tmp = client.get("key");
-        	System.out.println("main "+tmp);
+        	//System.out.println("main "+tmp);
         	if (tmp!=null && !value.equals(tmp)) {
         		value = tmp;
-        		System.out.println(value);
+        		++count;
+        		//// System.out.println(value);
         	}
+        	if (count == 10) break;
         }
     }
+	
 	
     @After
     public void tearDown() throws InterruptedException {

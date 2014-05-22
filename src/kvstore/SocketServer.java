@@ -83,20 +83,23 @@ public class SocketServer {
     	// TODO: setSoTimeout() might throw SocketException
     	server.setSoTimeout(TIMEOUT);
     	
-        while (!stopped) {
-        	try {
-        		Socket sock = server.accept();
-        		if(sock != null)
-        			handler.handle(sock);
-        	}catch(SocketTimeoutException e) {
-        		continue;
-        	}
-        }
-        try {
-            server.close();
-        } catch (IOException e) {
-            // ignore error
-        }
+    	try {
+	        while (!stopped) {
+	        	try {
+	        		Socket sock = server.accept();
+	        		if(sock != null)
+	        			handler.handle(sock);
+	        	}catch(SocketTimeoutException e) {
+	        		continue;
+	        	}
+	        }
+    	} finally {
+    		try {
+    			server.close();
+    		} catch (IOException e) {
+    			// ignore error
+    		}
+    	}
     }
 
     /**

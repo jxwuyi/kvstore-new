@@ -81,11 +81,6 @@ public class KVMessage implements Serializable {
 	    	DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
 	    	Document doc = dBuilder.parse(new NoCloseInputStream(sock.getInputStream()));
 	    	
-	    	// TODO: to make sure if this exception should be thrown
-	    	//   I think XML encoding could be different from utf-8
-	    	if(doc.getXmlEncoding() == null || doc.getXmlVersion() == null)
-	    		throw new KVException(KVConstants.ERROR_INVALID_FORMAT);
-	    	
 	    	Element root = doc.getDocumentElement();
 	    	
 	    	root.normalize(); // normalization is recommended

@@ -98,12 +98,14 @@ public class KVMessageTest {
         setupSocket("no-prologue.txt");
         // TODO: to make sure what the correct behavior is in this case
         try {
-        	new KVMessage(sock);
-            fail("Didn't fail on XML file without prologue!");
-        } catch (KVException kve) {
-            String errorMsg = kve.getKVMessage().getMessage();
-            // TODO: I think this should cause fatal error, not sure
-            assertEquals(errorMsg, ERROR_INVALID_FORMAT);
+        	KVMessage kvm = new KVMessage(sock);
+        	assertNotNull(kvm);
+            assertEquals(DEL_REQ, kvm.getMsgType());
+            assertNull(kvm.getMessage());
+            assertNotNull(kvm.getKey());
+            assertNull(kvm.getValue());
+        } catch (Exception e) {
+        	fail("Should not fail on XML file without prologue!");
         }
     }
     

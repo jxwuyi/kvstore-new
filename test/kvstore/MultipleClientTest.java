@@ -4,6 +4,8 @@ import static org.junit.Assert.*;
 import java.io.IOException;
 import java.lang.Thread;
 import java.net.InetAddress;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.junit.After;
 import org.junit.Before;
@@ -78,10 +80,10 @@ public class MultipleClientTest {
 		thread1.start();
 
         client = new KVClient(hostname, 8080);
-        assertEquals(client.get("foo"), null);  
+        assertNull(client.get("foo"));  
     }
 	
-	@Test
+	@Test(timeout = 30000)
     public void threeThreads() throws KVException {
 	    KVClient client  = new KVClient(hostname, 8080);
 		Thread thread1 = new Thread(
@@ -94,7 +96,7 @@ public class MultipleClientTest {
 					        	client.put("key", Integer.toString(i));
 					        	//System.out.println("thread "+Integer.toString(i));
 					        	//System.out.println("thread get "+client.get("key"));
-					        	Thread.sleep(200);
+					        	Thread.sleep(210);
 					        }
 						} catch (KVException e) {
 							e.printStackTrace();
@@ -124,10 +126,10 @@ public class MultipleClientTest {
 						}
 					}
 				});
-		String value = "";
-		int count = 0;
+
 		thread1.start();
 		thread2.start();
+		Set<String> st = new HashSet<String>();
         while (true) {
         	try {
 				Thread.sleep(10);
@@ -136,13 +138,13 @@ public class MultipleClientTest {
 			}
         	String tmp = client.get("key");
         	//System.out.println("main "+tmp);
-        	if (tmp!=null && !value.equals(tmp)) {
-        		value = tmp;
-        		++count;
-        		//// System.out.println(value);
-        	}
-        	if (count == 10) break;
+        	if (tmp!=null)
+        		st.add(tmp);
+        		
+        	if (st.size() == 10) break;
         }
+        
+        assertEquals(st.size(), 10);
     }
 	
 	

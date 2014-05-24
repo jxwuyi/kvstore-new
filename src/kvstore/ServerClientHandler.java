@@ -86,7 +86,7 @@ public class ServerClientHandler implements NetworkHandler {
 					resp.setValue(value);
 				} else
 				if(msg.getMsgType().equals(KVConstants.DEL_REQ)) { // del
-					kvServer.del(msg.getMessage());
+					kvServer.del(msg.getKey());
 					resp = new KVMessage(KVConstants.RESP,KVConstants.SUCCESS);
 				} else
 					// no such key

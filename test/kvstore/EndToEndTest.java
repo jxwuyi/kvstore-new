@@ -27,5 +27,20 @@ public class EndToEndTest extends EndToEndTemplate {
         }
         assertEquals(client.get("a"), Integer.toString(i-1));  
     }
+	
+
+	@Test
+    public void simpleDeleteTest() throws KVException {
+		client.put("goood", "do");
+		assertEquals(client.get("goood"), "do");
+		client.del("goood");
+        assertEquals(client.get("goood"), null);
+    }
+	
+	@Test
+    public void deleteNoneExistKey() throws KVException {
+		client.del("goood");
+        assertEquals(client.get("goood"), null);
+    }
 
 }

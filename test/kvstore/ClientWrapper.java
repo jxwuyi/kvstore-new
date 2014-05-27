@@ -1,4 +1,4 @@
-package kvstore;
+package kvstore; //:)
 
 public class ClientWrapper extends KVClient {
 
